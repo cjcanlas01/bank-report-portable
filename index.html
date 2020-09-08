@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BANK REPORT</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z"
+      crossorigin="anonymous"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      .body {
+        margin: 3% 15% 3% 15%;
+      }
+
+      #result {
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="body">
+      <!-- Request -->
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text">REQUEST</span>
+        </div>
+        <input type="text" class="form-control" id="request-resource-input" />
+      </div>
+      <button type="button" class="btn btn-primary" id="compute">
+        Compute
+      </button>
+      <button type="button" class="btn btn-primary" id="clear">Clear</button>
+      <div id="result"></div>
+    </div>
+  </body>
+  <script
+    src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+    crossorigin="anonymous"
+  ></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+    integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+    crossorigin="anonymous"
+  ></script>
+  <script
+    src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+    integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+    crossorigin="anonymous"
+  ></script>
+  <script>
+    const CONSTANTS = {
+      TRANSPORT_TAX: 7.2,
+      MAX_TRANSPORT_AMOUNT: 4110000
+    };
+
+    const computeLoadCount = (data, resourceCount) => {
+      const TAX_RATE = Number(data.TRANSPORT_TAX);
+      const TRANSPORT_AMT = Number(data.MAX_TRANSPORT_AMOUNT);
+
+      if (!TAX_RATE || !TRANSPORT_AMT) {
+        return false;
+      }
+
+      // Final deliverable amount of bank
+      let deliverableAmt = TRANSPORT_AMT - (TRANSPORT_AMT * TAX_RATE) / 100;
+      deliverableAmt = deliverableAmt.toString().slice(0, 3);
+      deliverableAmt = Number((deliverableAmt / 100).toFixed(2));
+      // Count for how many times bank should hit transport
+      const transportCount = (resourceCount / deliverableAmt).toFixed(2);
+      // Separate full and last load count
+      const [wholeCount, decimalCount] = transportCount.split(".");
+      let decimalAmount = deliverableAmt * (decimalCount / 100);
+      decimalAmount = decimalAmount.toFixed(2);
+      const decimalInMillions = decimalAmount * 1000000;
+      const MAGIC_AMOUNT = 10000;
+
+      for (
+        let lastLoad = decimalInMillions;
+        lastLoad <= TRANSPORT_AMT;
+        lastLoad++
+      ) {
+        const findAmount = lastLoad - (lastLoad * TAX_RATE) / 100;
+        /**
+         * Find transport amount by
+         * incrementing value from decimal value and
+         * computing value with transport tax amount deducted
+         * then compare to given decimal value
+         */
+        if (Math.trunc(findAmount) == Math.trunc(decimalInMillions)) {
+          const isDivisbleToDeliverableAmt =
+            wholeCount * deliverableAmt == resourceCount ? true : false;
+
+          if (isDivisbleToDeliverableAmt) {
+            return `Send **${wholeCount}** full loads.`;
+          }
+
+          lastLoad = lastLoad + MAGIC_AMOUNT;
+          return `Send <b>${wholeCount}</b> full loads and <b>${lastLoad}</b> for last load.`;
+        }
+      }
+    };
+
+    $("#compute").click(function () {
+      const content = $("#request-resource-input").val();
+      let parsedRequest = content
+        .split(" ")
+        //    .filter((el) => el != "!req")
+        .map(el => {
+          el = el.split("-");
+          const loadDetails = computeLoadCount(CONSTANTS, el[1]);
+
+          if (!loadDetails) {
+            message.channel.send("Set transport tax and amount first!");
+            return false;
+          }
+
+          return {
+            name: `${el[0].charAt(0).toUpperCase() + el[0].slice(1)}`,
+            value: `<b>Amount</b>: ${el[1]} million. ${loadDetails}`
+          };
+        });
+      // Clear result
+      $("#result").html("");
+      // Apply new result
+      parsedRequest.forEach(element => {
+        console.log(element);
+        $("#result").append(
+          `<span><b>${element.name}</b></span><br><span>${element.value}<span/><br><br>`
+        );
+      });
+    });
+
+    // Clear result
+    $("#clear").click(function () {
+      $("#result").html("");
+    });
+  </script>
+</html>
