@@ -59,7 +59,7 @@
   <script>
     const CONSTANTS = {
       TRANSPORT_TAX: 7.2,
-      MAX_TRANSPORT_AMOUNT: 4110000
+      MAX_TRANSPORT_AMOUNT: 4110000,
     };
 
     const computeLoadCount = (data, resourceCount) => {
@@ -114,25 +114,34 @@
       let parsedRequest = content
         .split(" ")
         //    .filter((el) => el != "!req")
-        .map(el => {
+        .map((el) => {
           el = el.split("-");
           const loadDetails = computeLoadCount(CONSTANTS, el[1]);
 
           if (!loadDetails) {
-            message.channel.send("Set transport tax and amount first!");
             return false;
           }
 
           return {
             name: `${el[0].charAt(0).toUpperCase() + el[0].slice(1)}`,
-            value: `<b>Amount</b>: ${el[1]} million. ${loadDetails}`
+            value: `<b>Amount</b>: ${el[1]} million. ${loadDetails}`,
           };
         });
       // Clear result
       $("#result").html("");
+
+      // Check if all result is good
+      const isParsedRequestGood = parsedRequest.every((el) => {
+        return el != false;
+      });
+
+      if (!isParsedRequestGood) {
+        alert("Please input correct request.");
+        return false;
+      }
+
       // Apply new result
-      parsedRequest.forEach(element => {
-        console.log(element);
+      parsedRequest.forEach((element) => {
         $("#result").append(
           `<span><b>${element.name}</b></span><br><span>${element.value}<span/><br><br>`
         );
@@ -142,6 +151,16 @@
     // Clear result
     $("#clear").click(function () {
       $("#result").html("");
+      $("#request-resource-input").val("");
+    });
+
+    // Handle enter key event for easy use
+    $("#request-resource-input").keypress(function (e) {
+      const key = e.which;
+      if (key == 13) {
+        $("#compute").click();
+        return false;
+      }
     });
   </script>
 </html>
