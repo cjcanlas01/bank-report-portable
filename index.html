@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BANK REPORT</title>
+    <title>Bank Request Generator</title>
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
@@ -30,6 +30,18 @@
       <!-- Request -->
       <div class="input-group mb-3">
         <div class="input-group-prepend">
+          <span class="input-group-text">TAX AMOUNT</span>
+        </div>
+        <input type="text" class="form-control" id="tax-amount" />
+      </div>
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text">TRANSPORT AMOUNT</span>
+        </div>
+        <input type="text" class="form-control" id="transport-amount" />
+      </div>
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
           <span class="input-group-text">REQUEST</span>
         </div>
         <input type="text" class="form-control" id="request-resource-input" />
@@ -39,6 +51,24 @@
       </button>
       <button type="button" class="btn btn-primary" id="clear">Clear</button>
       <div id="result"></div>
+      <span
+        ><b>Note: </b
+        ><span style="font-style: italic"
+          >Tax and transport amount on first compute will be saved automatically
+          in your browser for easy use. To update new tax and transport amount,
+          just change the value and click compute again.
+        </span></span
+      >
+      <br />
+      <br />
+      <span
+        ><b>How to use: </b
+        ><span>
+          Type "<b>Resource Type</b>"-"<b>Amount</b>" e.g. <b>gold-50</b> and
+          you can add another resource by separating them with space. e.g.
+          <b>gold-50 iron-50 stone-23</b>
+        </span></span
+      >
     </div>
   </body>
   <script
@@ -57,10 +87,15 @@
     crossorigin="anonymous"
   ></script>
   <script>
-    const CONSTANTS = {
-      TRANSPORT_TAX: 7.2,
-      MAX_TRANSPORT_AMOUNT: 4110000,
-    };
+    const taxAmount = localStorage.getItem("tax-amount");
+    const transportAmount = localStorage.getItem("transport-amount");
+
+    $(document).ready(function () {
+      if (taxAmount && transportAmount) {
+        $("#tax-amount").val(localStorage.getItem("tax-amount"));
+        $("#transport-amount").val(localStorage.getItem("transport-amount"));
+      }
+    });
 
     const computeLoadCount = (data, resourceCount) => {
       const TAX_RATE = Number(data.TRANSPORT_TAX);
@@ -111,22 +146,34 @@
 
     $("#compute").click(function () {
       const content = $("#request-resource-input").val();
-      let parsedRequest = content
-        .split(" ")
-        //    .filter((el) => el != "!req")
-        .map((el) => {
-          el = el.split("-");
-          const loadDetails = computeLoadCount(CONSTANTS, el[1]);
 
-          if (!loadDetails) {
-            return false;
-          }
+      if (!$("#tax-amount").val() && !$("#transport-amount").val()) {
+        alert("Enter bank tax and transport please.");
+        return false;
+      } else {
+        localStorage.setItem("tax-amount", $("#tax-amount").val());
+        localStorage.setItem("transport-amount", $("#transport-amount").val());
+      }
 
-          return {
-            name: `${el[0].charAt(0).toUpperCase() + el[0].slice(1)}`,
-            value: `<b>Amount</b>: ${el[1]} million. ${loadDetails}`,
-          };
-        });
+      let parsedRequest = content.split(" ").map((el) => {
+        el = el.split("-");
+        const loadDetails = computeLoadCount(
+          {
+            TRANSPORT_TAX: localStorage.getItem("tax-amount"),
+            MAX_TRANSPORT_AMOUNT: localStorage.getItem("transport-amount"),
+          },
+          el[1]
+        );
+
+        if (!loadDetails) {
+          return false;
+        }
+
+        return {
+          name: `${el[0].charAt(0).toUpperCase() + el[0].slice(1)}`,
+          value: `<b>Amount</b>: ${el[1]} million. ${loadDetails}`,
+        };
+      });
       // Clear result
       $("#result").html("");
 
