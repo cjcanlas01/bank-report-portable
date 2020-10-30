@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bank Transport Tracker</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z"
+      crossorigin="anonymous"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      .body {
+        margin: 3% 15% 3% 15%;
+      }
+
+      footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 50px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="body">
+      <!-- Request -->
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text">GRAIN</span>
+        </div>
+        <input type="text" class="form-control" id="grain" />
+      </div>
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text">WOOD</span>
+        </div>
+        <input type="text" class="form-control" id="wood" />
+      </div>
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text">STONE</span>
+        </div>
+        <input type="text" class="form-control" id="stone" />
+      </div>
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text">IRON</span>
+        </div>
+        <input type="text" class="form-control" id="iron" />
+      </div>
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text">GOLD</span>
+        </div>
+        <input type="text" class="form-control" id="gold" />
+      </div>
+      <button type="button" class="btn btn-primary" id="clear">Clear</button>
+      <div id="result">
+        <hr />
+        <p><b>GRAIN</b> - <span id="grain-count"></span></p>
+        <hr />
+        <p><b>WOOD</b> - <span id="wood-count"></span></p>
+        <hr />
+        <p><b>STONE</b> - <span id="stone-count"></span></p>
+        <hr />
+        <p><b>IRON</b> - <span id="iron-count"></span></p>
+        <hr />
+        <p><b>GOLD</b> - <span id="gold-count"></span></p>
+        <hr />
+      </div>
+    </div>
+    <footer><a href="index.html">Bank Transport Calculator</a></footer>
+  </body>
+  <script
+    src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+    integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+    crossorigin="anonymous"
+  ></script>
+  <script>
+    document.addEventListener("keyup", function () {
+      const active = document.activeElement;
+      const countId = `${active.getAttribute("id")}-count`;
+      const input = active.value;
+
+      const compute = input.split("-").reduce((acc, current) => {
+        return acc + parseInt(current);
+      }, 0);
+
+      const countDisplay = document.getElementById(countId);
+      if (!Number.isNaN(compute)) {
+        countDisplay.innerHTML = compute;
+      }
+    });
+
+    const clear = document.getElementById("clear");
+    clear.addEventListener("click", function () {
+      const input = document.getElementsByTagName("input");
+      for (elem of input) {
+        elem.value = "";
+      }
+      const result = document.querySelectorAll("#result span");
+      for (elem of result) {
+        elem.innerHTML = "";
+      }
+    });
+  </script>
+</html>
